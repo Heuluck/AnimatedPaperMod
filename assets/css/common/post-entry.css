@@ -104,3 +104,44 @@
 .entry-cover a {
     box-shadow: 0 1px 0 var(--primary);
 }
+
+@view-transition {
+    navigation: auto;
+}
+
+/* 创建自定义动画 */
+@keyframes move-out {
+  from {
+    /* transform: translateX(0); */
+    opacity: 1;
+  }
+
+  to {
+    /* transform: translateX(-100vw); */
+    opacity: 0;
+  }
+}
+
+@keyframes move-in {
+  from {
+    /* transform: translateX(100vw); */
+    opacity: 0;
+  }
+
+  to {
+    /* transform: translateX(0); */
+    opacity: 1;
+  }
+}
+
+main {
+    view-transition-name: main;
+}
+
+::view-transition-old(main) {
+  animation: 0.2s ease-in both move-out;
+}
+
+::view-transition-new(main) {
+  animation: 0.2s ease-in both move-in;
+}

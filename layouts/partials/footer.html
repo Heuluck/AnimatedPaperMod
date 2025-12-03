@@ -148,3 +148,76 @@
     });
 </script>
 {{- end }}
+
+<script>
+function isArticle(url){
+    const path = url.pathname;
+    const articleRegex = /^\/blogs\/.+/;
+    return articleRegex.test(path);
+}
+
+function isHome(url){
+    const path = url.pathname;
+    return path === '/' || path === '/index.html';
+}
+
+function extractArticleNameFromUrl(input) {
+    const url = (input instanceof URL) ? input : new URL(String(input), location.origin);
+    let raw = url.pathname + (url.search || '') + (url.hash || '');
+    try {
+        raw = decodeURIComponent(raw);
+    } catch (e) {
+    }
+    const normalized = raw.replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
+    return 'article-' + normalized;
+}
+
+const setTemporaryViewTransitionNames = async (entries, vtPromise) => {
+  for (const [$el, name] of entries) {
+    $el.style.viewTransitionName = name;
+  }
+
+  await vtPromise;
+
+  for (const [$el, name] of entries) {
+    $el.style.viewTransitionName = '';
+  }
+}
+
+window.addEventListener('pageswap', async (e) => {
+  if (e.viewTransition) {
+    const targetUrl = new URL(e.activation.entry.url);
+    const currentUrl = new URL(e.activation.from.url);
+    if (isArticle(targetUrl) && isHome(currentUrl)) {
+        const article = extractArticleNameFromUrl(targetUrl);
+        setTemporaryViewTransitionNames([
+            [document.querySelector(`#${article} h2.entry-hint-parent`), 'title'],
+        ], e.viewTransition.finished);
+    } else if (isHome(targetUrl) && isArticle(currentUrl)){
+        const article = extractArticleNameFromUrl(currentUrl);
+        setTemporaryViewTransitionNames([
+            [document.querySelector(`#${article} h1.entry-hint-parent`), 'title'],
+        ], e.viewTransition.finished);
+    }
+  }
+});
+
+window.addEventListener('pagereveal', async (e) => {
+  if (e.viewTransition) {
+    const fromUrl = new URL(navigation.activation.from.url);
+    const currentUrl = new URL(navigation.activation.entry.url);
+        if (isArticle(fromUrl) && isHome(currentUrl)) {
+        const article = extractArticleNameFromUrl(fromUrl);
+        setTemporaryViewTransitionNames([
+            [document.querySelector(`#${article} h2.entry-hint-parent`), 'title'],
+        ], e.viewTransition.ready);
+    } else if (isHome(fromUrl) && isArticle(currentUrl)){
+        const article = extractArticleNameFromUrl(currentUrl);
+        setTemporaryViewTransitionNames([
+            [document.querySelector(`#${article} h1.entry-hint-parent`), 'title'],
+        ], e.viewTransition.ready);
+    }
+  }
+});
+
+</script>
