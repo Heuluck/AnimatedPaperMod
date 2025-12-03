@@ -134,14 +134,23 @@
   }
 }
 
+:root {
+    --title-transition-time: .3s;
+    --main-transition-time: .2s;
+}
+
 main {
     view-transition-name: main;
 }
 
 ::view-transition-old(main) {
-  animation: 0.2s ease-in both move-out;
+  animation: var(--main-transition-time) ease-in both move-out;
 }
 
 ::view-transition-new(main) {
-  animation: 0.2s ease-in both move-in;
+  animation: var(--main-transition-time) ease-in both move-in;
+}
+
+::view-transition-group(.title-to-article) {
+  animation-duration: var(--title-transition-time);
 }
