@@ -2,17 +2,17 @@
 {{- if and (gt (len $pages) 1) (in $pages . ) }}
 <nav class="paginav">
   {{- with $pages.Next . }}
-  <a class="prev" href="{{ .Permalink }}">
+  <a class="prev" href="{{ .Permalink }}" id="article{{ .Path | replaceRE `[^A-Za-z0-9_-]+` `-` }}">
     <span class="title">« {{ i18n "prev_page" }}</span>
     <br>
-    <span>{{- .Name -}}</span>
+    <span class="article-title">{{- .Name -}}</span>
   </a>
   {{- end }}
   {{- with $pages.Prev . }}
-  <a class="next" href="{{ .Permalink }}">
+  <a class="next" href="{{ .Permalink }}" id="article{{ .Path | replaceRE `[^A-Za-z0-9_-]+` `-` }}">
     <span class="title">{{ i18n "next_page" }} »</span>
     <br>
-    <span>{{- .Name -}}</span>
+    <span class="article-title">{{- .Name -}}</span>
   </a>
   {{- end }}
 </nav>
