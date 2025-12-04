@@ -152,7 +152,7 @@
 <script>
 function isArticle(url){
     const path = url.pathname;
-    const articleRegex = /^\/[a-zA-Z0-9]+\/.+/;
+    const articleRegex = /^(\/.+\/)+/;
     return articleRegex.test(path);
 }
 
@@ -172,8 +172,24 @@ function extractArticleNameFromUrl(input) {
     return 'article-' + normalized;
 }
 
+/**
+ * 直接根据 from to 批量获取
+*/
+function extractArticleNameFromUrls(from, to){
+    let article = '';
+    if (isArticle(from) && isHome(to)) { // 从首页导航到文章页
+        article = extractArticleNameFromUrl(from);
+    } else if (isHome(from) && isArticle(to)){ // 从文章页回到首页
+        article = extractArticleNameFromUrl(to);
+    } else if (isArticle(from) && isArticle(to)){ // 文章页内跳转
+        article = extractArticleNameFromUrl(to);
+    }
+    return article;
+}
+
 const setTemporaryViewTransitionNames = async (entries, vtPromise) => {
   for (const [$el, name, className] of entries) {
+    if(!$el) continue;
     $el.style.viewTransitionName = name;
     if (className) {
         $el.style.viewTransitionClass = className;
@@ -194,19 +210,13 @@ window.addEventListener('pageswap', async (e) => {
   if (e.viewTransition) {
     const targetUrl = new URL(e.activation.entry.url);
     const currentUrl = new URL(e.activation.from.url);
-    if (isArticle(targetUrl) && isHome(currentUrl)) {
-        const article = extractArticleNameFromUrl(targetUrl);
-        setTemporaryViewTransitionNames([
-            [document.querySelector(`#${article} span.article-title`), 'title', 'title-to-article'],
-            [document.querySelector(`#${article} .post-meta-info`), 'meta', 'title-to-article'],
-        ], e.viewTransition.finished);
-    } else if (isHome(targetUrl) && isArticle(currentUrl)){
-        const article = extractArticleNameFromUrl(currentUrl);
-        setTemporaryViewTransitionNames([
-            [document.querySelector(`#${article} span.article-title`), 'title', 'title-to-article'],
-            [document.querySelector(`#${article} .post-meta-info`), 'meta', 'title-to-article'],
-        ], e.viewTransition.finished);
-    }
+    const article = extractArticleNameFromUrls(currentUrl, targetUrl);
+    const titleDom = document.querySelector(`#${article} span.article-title`)
+    const metaDom = document.querySelector(`#${article} .post-meta-info`)
+    setTemporaryViewTransitionNames([
+        [titleDom, 'title', 'title-to-article'],
+        [metaDom, 'meta', 'title-to-article'],
+    ], e.viewTransition.finished);
   }
 });
 
@@ -214,19 +224,13 @@ window.addEventListener('pagereveal', async (e) => {
   if (e.viewTransition) {
     const fromUrl = new URL(navigation.activation.from.url);
     const currentUrl = new URL(navigation.activation.entry.url);
-        if (isArticle(fromUrl) && isHome(currentUrl)) {
-        const article = extractArticleNameFromUrl(fromUrl);
-        setTemporaryViewTransitionNames([
-            [document.querySelector(`#${article} span.article-title`), 'title', 'title-to-article'],
-            [document.querySelector(`#${article} .post-meta-info`), 'meta', 'title-to-article'],
-        ], e.viewTransition.ready);
-    } else if (isHome(fromUrl) && isArticle(currentUrl)){
-        const article = extractArticleNameFromUrl(currentUrl);
-        setTemporaryViewTransitionNames([
-            [document.querySelector(`#${article} span.article-title`), 'title', 'title-to-article'],
-            [document.querySelector(`#${article} .post-meta-info`), 'meta', 'title-to-article'],
-        ], e.viewTransition.ready);
-    }
+    const article = extractArticleNameFromUrls(fromUrl, currentUrl);
+    const titleDom = document.querySelector(`#${article} span.article-title`)
+    const metaDom = document.querySelector(`#${article} .post-meta-info`)
+    setTemporaryViewTransitionNames([
+        [titleDom, 'title', 'title-to-article'],
+        [metaDom, 'meta', 'title-to-article'],
+    ], e.viewTransition.finished);
   }
 });
 
